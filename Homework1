@@ -1,1 +1,63 @@
+# 求2+4+6+8+...+100的求和，用Python该如何写
 
+sum=0
+for number in range(51):
+    sum=number*2+sum
+print(sum)
+
+# Action2: 统计全班的成绩 班里有5名同学，现在需要你用Python来统计下 这些人在语文、英语、数学中的平均成绩、最小成绩、最大成绩、方差、标准差。然后把这些人的总成绩排序，得出名次进行成绩输出（可以用numpy或pandas）
+import numpy as np
+persontype = np.dtype({'names':['name', 'chinese', 'math', 'english'],'formats':['U32', 'i', 'i', 'i']})
+peoples=np.array([("张飞",68,65,30),("关羽",95,76,98),("刘备",98,86,88),("典韦",90,88,77),("许褚",80,90,90)],dtype=persontype)
+chineses=peoples['chinese']
+maths=peoples['math']
+englishs=peoples['english']
+Grade=[chineses,maths,englishs]
+
+print("语文的平均/最小/最大/方差/标准差的成绩为%.2f/%.2f/%.2f/%.2f/%.2f" %(np.mean(Grade[0]),np.min(Grade[0]),np.max(Grade[0]),np.var(Grade[0]),np.std(Grade[0])))
+print("数学的平均/最小/最大/方差/标准差的成绩为%.2f/%.2f/%.2f/%.2f/%.2f" %(np.mean(Grade[1]),np.min(Grade[1]),np.max(Grade[1]),np.var(Grade[1]),np.std(Grade[1])))
+print("英语的平均/最小/最大/方差/标准差的成绩为%.2f/%.2f/%.2f/%.2f/%.2f" %(np.mean(Grade[2]),np.min(Grade[2]),np.max(Grade[2]),np.var(Grade[2]),np.std(Grade[2])))
+
+Score=chineses+maths+englishs
+
+Sort_Index=np.argsort(-Score)   #argsort()函数是将x中的元素从小到大排列，提取其对应的index(索引)，然后输出||当num<0时，np.argsort()[num]就是把数组y的元素反向输出
+Score_HTL=peoples['name'][Sort_Index]
+Score_LTH=Score_HTL[::-1]  # 使用切分器倒序输出
+
+print('总分从高到低：',Score_HTL)
+print('总分从低到高：',Score_LTH)
+
+'''Action3: 对汽车质量数据进行统计
+数据集：car_complain.csv
+600条汽车质量投诉
+Step1，数据加载
+Step2，数据预处理
+  拆分problem类型 => 多个字段
+Step3，数据统计
+  对数据进行探索：品牌投诉总数，车型投诉总数
+  哪个品牌的平均车型投诉最多
+'''
+
+#Step 1 加载数据
+import pandas as pd
+File=pd.read_csv('car_complain.csv')
+
+#Step 2 数据预处理 problem数据拆分
+File_pro=File['problem'].str.get_dummies(',')  # 对离散型特征进行one-hot编码 Convert categorical variable into dummy/indicator variables
+
+#用新列替换原列
+File_new=File.drop('problem',1).join(File_pro)
+
+#Step 3 数据统计
+
+#根据品牌投诉总数 brand
+df_brand=File_new.groupby(['brand'])['id'].agg(['count']).sort_values('count',ascending=False)
+print('按品牌从大到小排序',format(df_brand))
+
+#根据车型投诉总数 model
+df_model=File_new.groupby(['car_model'])['id'].agg(['count']).sort_values('count',ascending=False)
+print('按车型从大到小排序',format(df_model))
+
+# 品牌平均车型投诉排序
+df_brand_model_avg=File_new.groupby(['brand','car_model'])['id'].agg(['count']).groupby(['brand']).mean().sort_values('count',ascending=False)  #df[](指输出数据的结果属性名称).groupby([df[属性],df[属性])(指分类的属性，数据的限定定语，可以有多个).mean()(对于数据的计算方式——函数名称)
+print('按车型的平均投诉从大到小排序',format(df_brand_model_avg))
